@@ -3,18 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRROS - Disaster Management System</title>
+<title>DRROS - Interactive Presentation</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial, sans-serif;
-    background: #0f172a;
+    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
     color: white;
+    scroll-behavior: smooth;
 }
 
+/* Navigation */
+nav {
+    position: fixed;
+    width: 100%;
+    background: #000;
+    padding: 10px;
+    text-align: center;
+    z-index: 1000;
+}
+
+nav a {
+    color: #00e5ff;
+    margin: 0 15px;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    color: #ffcc00;
+}
+
+/* Sections */
 section {
-    padding: 60px 10%;
+    padding: 100px 10% 60px 10%;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    opacity: 0;
+    transform: translateY(30px);
+    transition: 0.8s ease;
+}
+
+section.visible {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 h1, h2 {
@@ -22,172 +54,203 @@ h1, h2 {
 }
 
 h1 {
-    font-size: 45px;
-    color: #38bdf8;
+    color: #00e5ff;
 }
 
 h2 {
-    font-size: 30px;
-    margin-bottom: 30px;
-    color: #facc15;
-}
-
-p {
-    font-size: 18px;
-    line-height: 1.6;
+    color: #ffcc00;
 }
 
 .card {
-    background: #1e293b;
+    background: rgba(255,255,255,0.08);
     padding: 20px;
-    margin: 15px 0;
     border-radius: 10px;
+    margin: 15px 0;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
-ul {
-    line-height: 1.8;
+.card:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.hidden {
+    display: none;
+}
+
+button {
+    padding: 10px 20px;
+    background: #00e5ff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+button:hover {
+    background: #ffcc00;
 }
 
 footer {
     text-align: center;
     padding: 20px;
-    background: #020617;
+    background: black;
 }
 </style>
 </head>
 
 <body>
 
-<section>
-    <h1>Disaster Management and Resource Allocation System</h1>
-    <p style="text-align:center;">By Aditya Aggarwal | Reg No: 2427030522</p>
+<nav>
+<a href="#home">Home</a>
+<a href="#intro">Introduction</a>
+<a href="#literature">Literature</a>
+<a href="#problem">Problem</a>
+<a href="#solution">Solution</a>
+<a href="#objectives">Objectives</a>
+<a href="#references">References</a>
+</nav>
+
+<section id="home">
+<h1>Disaster Management and Resource Allocation System</h1>
+<p style="text-align:center;">Aditya Aggarwal | Reg No: 2427030522</p>
+<p style="text-align:center;">Supervised By: Dr. Mayank Namdev</p>
+</section>
+
+<section id="intro">
+<h2>Introduction</h2>
+<div class="card">
+<p>
+A Disaster Management and Resource Allocation System coordinates
+activities before, during and after disasters using technology,
+communication and intelligent resource management.
+</p>
+<ul>
+<li>Predict disasters</li>
+<li>Coordinate rescue operations</li>
+<li>Optimize resource allocation</li>
+<li>Support rehabilitation</li>
+</ul>
+</div>
+</section>
+
+<section id="literature">
+<h2>Literature Review (Click to Expand)</h2>
+
+<div class="card" onclick="toggle('lit1')">
+<strong>Pramod Patil (2012)</strong>
+<div id="lit1" class="hidden">
+Focused on effective warning and communication systems in India.
+</div>
+</div>
+
+<div class="card" onclick="toggle('lit2')">
+<strong>Chen-Huei Chou et al. (2013)</strong>
+<div id="lit2" class="hidden">
+Web-based disaster management systems for victims and aid providers.
+</div>
+</div>
+
+<div class="card" onclick="toggle('lit3')">
+<strong>Dr. Priyanka Banerji (2013)</strong>
+<div id="lit3" class="hidden">
+Comparison of disaster recovery growth between India and Japan.
+</div>
+</div>
+
+<div class="card" onclick="toggle('lit4')">
+<strong>Other Researchers (2014–2018)</strong>
+<div id="lit4" class="hidden">
+Focused on social vulnerability, grassroots participation, 
+case studies, and inefficiencies in frameworks.
+</div>
+</div>
+
+</section>
+
+<section id="problem">
+<h2>Problem Statement</h2>
+<div class="card">
+A system is needed to automate and optimize disaster response 
+through real-time management and efficient resource allocation.
+</div>
+</section>
+
+<section id="solution">
+<h2>Proposed Solution – DRROS</h2>
+
+<div class="card">
+<strong>Key Components (Click Me)</strong>
+<div id="components" class="hidden">
+<ul>
+<li>GIS Integration</li>
+<li>IoT & Sensor Networks</li>
+<li>Mobile Reporting App</li>
+<li>Social Media NLP Analytics</li>
+<li>Predictive ML Models</li>
+<li>Optimization Algorithms</li>
+<li>GPS & RFID Tracking</li>
+</ul>
+</div>
+</div>
+
+<button onclick="toggle('components')">Show/Hide Components</button>
+
+</section>
+
+<section id="objectives">
+<h2>Objectives</h2>
+<div class="card">
+<ul>
+<li>Optimize resource allocation</li>
+<li>Enhance situational awareness</li>
+<li>Improve coordination</li>
+<li>Provide predictive response</li>
+</ul>
+</div>
+</section>
+
+<section id="references">
+<h2>References</h2>
+<div class="card">
+Hinoni Goyal & Manik Goyal (2018) – Review on Disaster Management.
+</div>
 </section>
 
 <section>
-    <h2>Introduction</h2>
-    <div class="card">
-        <p>
-        A Disaster Management and Resource Allocation System is designed to efficiently
-        handle and coordinate activities before, during, and after a disaster to minimize
-        its impact on people, property, and the environment.
-        It integrates technology, communication, and resource management to ensure
-        timely response and recovery.
-        </p>
-    </div>
-</section>
-
-<section>
-    <h2>Current Systems</h2>
-
-    <div class="card">
-        <h3>Ushahidi</h3>
-        <p><strong>Pros:</strong></p>
-        <ul>
-            <li>Rapid crowdsourced reporting (SMS, web, social)</li>
-            <li>Improves situational awareness</li>
-            <li>Easy deployment</li>
-        </ul>
-        <p><strong>Cons:</strong></p>
-        <ul>
-            <li>Data quality and verification issues</li>
-            <li>Limited asset-management features</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h3>Sahana Eden</h3>
-        <p><strong>Pros:</strong></p>
-        <ul>
-            <li>Strong coordination & tracking features</li>
-            <li>Open-source and extensible</li>
-        </ul>
-        <p><strong>Cons:</strong></p>
-        <ul>
-            <li>Complex installation</li>
-            <li>Requires technical expertise</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h3>GDACS</h3>
-        <p><strong>Pros:</strong></p>
-        <ul>
-            <li>Global disaster alerts</li>
-            <li>Satellite & sensor integration</li>
-        </ul>
-        <p><strong>Cons:</strong></p>
-        <ul>
-            <li>Coarse global-level data</li>
-            <li>Not a full resource allocation system</li>
-        </ul>
-    </div>
-</section>
-
-<section>
-    <h2>Our Solution – DRROS</h2>
-    <div class="card">
-        <p>
-        Disaster Response and Resource Optimization System (DRROS)
-        is designed with AI-based prediction models and optimization
-        algorithms for real-time disaster detection and efficient
-        resource allocation.
-        </p>
-
-        <h3>Methodology</h3>
-        <ul>
-            <li>Requirement Analysis</li>
-            <li>Data Collection & Integration</li>
-            <li>System Architecture Design</li>
-            <li>Event Detection & Prediction Models</li>
-            <li>Resource Optimization Algorithms</li>
-            <li>User Interface Development</li>
-            <li>System Integration Testing</li>
-            <li>Performance Validation</li>
-            <li>Deployment & Training</li>
-            <li>Continuous Monitoring</li>
-        </ul>
-    </div>
-</section>
-
-<section>
-    <h2>Advantages of DRROS</h2>
-
-    <div class="card">
-        <h3>Over Ushahidi</h3>
-        <ul>
-            <li>AI-based prediction models</li>
-            <li>Optimization algorithms (MILP, RL)</li>
-            <li>Centralized coordination</li>
-            <li>End-to-end lifecycle support</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h3>Over Sahana Eden</h3>
-        <ul>
-            <li>Real-time dynamic allocation</li>
-            <li>Automated alert dissemination</li>
-            <li>Scalable cloud architecture</li>
-        </ul>
-    </div>
-
-    <div class="card">
-        <h3>Over GDACS</h3>
-        <ul>
-            <li>Localized high-resolution support</li>
-            <li>Ground-level IoT integration</li>
-            <li>Actionable deployment recommendations</li>
-        </ul>
-    </div>
-
+<h2>THANK YOU!</h2>
 </section>
 
 <footer>
-    © 2026 Disaster Response and Resource Optimization System (DRROS)
+© 2026 DRROS Presentation
 </footer>
+
+<script>
+function toggle(id) {
+    var element = document.getElementById(id);
+    if (element.classList.contains("hidden")) {
+        element.classList.remove("hidden");
+    } else {
+        element.classList.add("hidden");
+    }
+}
+
+/* Fade-in animation on scroll */
+const sections = document.querySelectorAll("section");
+
+window.addEventListener("scroll", () => {
+    sections.forEach(sec => {
+        const position = sec.getBoundingClientRect().top;
+        if(position < window.innerHeight - 100) {
+            sec.classList.add("visible");
+        }
+    });
+});
+</script>
 
 </body>
 </html>
+
 
 
 
