@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DRROS Advanced Dashboard</title>
+<title>DRROS Pro Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -12,201 +12,209 @@
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body { font-family: Arial; margin:0; background:#eef2f7;}
-header { background:#0f172a; color:white; text-align:center; padding:20px;}
-section { padding:20px; max-width:1200px; margin:auto;}
+:root {
+    --bg:#0f172a;
+    --card:#1e293b;
+    --text:#e2e8f0;
+    --accent:#38bdf8;
+}
+
+body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    width: 220px;
+    height: 100%;
+    background: #020617;
+    padding: 20px;
+}
+
+.sidebar h2 { color: var(--accent); }
+
+.sidebar a {
+    display:block;
+    color: var(--text);
+    margin:15px 0;
+    text-decoration:none;
+}
+
+.main {
+    margin-left:240px;
+    padding:20px;
+}
 
 .card {
-    background:white;
+    background: var(--card);
     padding:20px;
     margin:20px 0;
     border-radius:12px;
-    box-shadow:0 6px 12px rgba(0,0,0,0.1);
+    box-shadow:0 0 20px rgba(0,0,0,0.3);
 }
 
-#map { height:450px; }
+#map { height:400px; border-radius:10px;}
 
-.incident { padding:10px; border-bottom:1px solid #ddd;}
-.high { color:red; font-weight:bold;}
-.medium { color:orange;}
-.low { color:green;}
+.incident { padding:10px; border-bottom:1px solid #334155;}
+
+.high { color:#f87171;}
+.medium { color:#fbbf24;}
+.low { color:#34d399;}
+
+.loader {
+    text-align:center;
+    padding:20px;
+}
 </style>
 </head>
 
 <body>
 
-<header>
-<h1>DRROS Advanced Dashboard</h1>
-<p>AI-Driven Disaster Response System</p>
-</header>
+<div class="sidebar">
+    <h2>DRROS</h2>
+    <a href="#">Dashboard</a>
+    <a href="#">Disasters</a>
+    <a href="#">Map</a>
+    <a href="#">Analytics</a>
+</div>
 
-<section>
+<div class="main">
+
+<h1>🚀 DRROS Pro Dashboard</h1>
 
 <div class="card">
-<h2>🌦️ Weather Intelligence</h2>
-<div id="weather"></div>
+<h3>🌦 Weather Intelligence</h3>
+<div id="weather" class="loader">Loading...</div>
 </div>
 
 <div class="card">
-<h2>🌍 Live Disaster Feed</h2>
-<div id="disasters"></div>
+<h3>🌍 Live Disasters</h3>
+<div id="disasters" class="loader">Loading...</div>
 </div>
 
 <div class="card">
-<h2>🗺️ Global Disaster Map</h2>
+<h3>🗺 Disaster Map</h3>
 <div id="map"></div>
 </div>
 
 <div class="card">
-<h2>📊 Severity Analytics</h2>
+<h3>📊 Analytics</h3>
 <canvas id="chart"></canvas>
 </div>
 
 <div class="card">
-<h2>🚑 AI Resource Allocation</h2>
+<h3>🚑 AI Resource Allocation</h3>
 <div id="allocation"></div>
 </div>
 
-</section>
+</div>
 
 <script>
 
-// ---------------- WEATHER ----------------
+// WEATHER
 let weatherFactor = 1;
 
-async function getWeather() {
-    try {
-        let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
-        let data = await res.json();
+async function weather() {
+    let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
+    let data = await res.json();
 
-        let wind = data.current_weather.windspeed;
+    let wind = data.current_weather.windspeed;
+    weatherFactor = wind > 25 ? 1.6 : wind > 15 ? 1.3 : 1;
 
-        weatherFactor = wind > 20 ? 1.5 : 1;
-
-        document.getElementById("weather").innerHTML =
-            `Temperature: ${data.current_weather.temperature}°C<br>
-             Wind Speed: ${wind} km/h<br>
-             Risk Multiplier: x${weatherFactor}`;
-    } catch {
-        document.getElementById("weather").innerHTML = "Weather unavailable";
-    }
+    document.getElementById("weather").innerHTML =
+        `Temp: ${data.current_weather.temperature}°C |
+         Wind: ${wind} km/h |
+         Risk x${weatherFactor}`;
 }
 
-// ---------------- MAP ----------------
-let map = L.map('map').setView([20, 0], 2);
+// MAP
+let map = L.map('map').setView([20,0],2);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-}).addTo(map);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// ---------------- GDACS ----------------
-async function getDisasters() {
+// DISASTERS
+async function disasters() {
+
     let res = await fetch("https://www.gdacs.org/xml/rss.xml");
     let text = await res.text();
 
-    let xml = new DOMParser().parseFromString(text, "text/xml");
+    let xml = new DOMParser().parseFromString(text,"text/xml");
     let items = xml.getElementsByTagName("item");
 
-    let container = document.getElementById("disasters");
-    let allocationBox = document.getElementById("allocation");
+    let dbox = document.getElementById("disasters");
+    let abox = document.getElementById("allocation");
 
-    container.innerHTML = "";
-    allocationBox.innerHTML = "";
+    dbox.innerHTML = "";
+    abox.innerHTML = "";
 
-    let stats = {High:0, Medium:0, Low:0};
+    let stats = {High:0,Medium:0,Low:0};
 
-    for (let i = 0; i < Math.min(items.length, 6); i++) {
+    for(let i=0;i<6;i++) {
 
         let title = items[i].getElementsByTagName("title")[0].textContent;
 
-        // Extract coordinates if available
         let lat = items[i].getElementsByTagName("geo:lat")[0];
         let lon = items[i].getElementsByTagName("geo:long")[0];
 
-        lat = lat ? parseFloat(lat.textContent) : (Math.random()*140 - 70);
-        lon = lon ? parseFloat(lon.textContent) : (Math.random()*360 - 180);
+        lat = lat ? parseFloat(lat.textContent) : (Math.random()*140-70);
+        lon = lon ? parseFloat(lon.textContent) : (Math.random()*360-180);
 
-        // Severity logic
-        let severity = "Low";
-        let baseScore = 1;
+        let severity="Low", score=1;
 
-        if (title.includes("Red")) {
-            severity = "High";
-            baseScore = 3;
-        } else if (title.includes("Orange")) {
-            severity = "Medium";
-            baseScore = 2;
-        }
+        if(title.includes("Red")) { severity="High"; score=3; }
+        else if(title.includes("Orange")) { severity="Medium"; score=2; }
 
         stats[severity]++;
 
-        // AI Priority Score
-        let priorityScore = baseScore * weatherFactor;
+        let priority = score * weatherFactor;
 
-        // Resource logic
-        let resources;
-        if (priorityScore > 3) {
-            resources = "🚁 Air Support + Advanced Medical Units";
-        } else if (priorityScore > 2) {
-            resources = "🚑 Ambulances + Rescue Teams";
-        } else {
-            resources = "🧑‍🚒 Local Emergency Units";
-        }
+        let resources =
+            priority>4 ? "🚁 Advanced Air Support" :
+            priority>2.5 ? "🚑 Medical Teams" :
+            "🧑‍🚒 Local Units";
 
-        // UI
-        let div = document.createElement("div");
-        div.className = `incident ${severity.toLowerCase()}`;
-        div.innerHTML = `
-            <strong>${title}</strong><br>
-            Severity: ${severity}<br>
-            Priority Score: ${priorityScore.toFixed(2)}
-        `;
-        container.appendChild(div);
+        let div=document.createElement("div");
+        div.className=`incident ${severity.toLowerCase()}`;
+        div.innerHTML=`${title}<br>Score: ${priority.toFixed(2)}`;
+        dbox.appendChild(div);
 
-        // Map marker
-        L.marker([lat, lon]).addTo(map)
-            .bindPopup(`
-                <b>${title}</b><br>
-                Severity: ${severity}<br>
-                Priority: ${priorityScore.toFixed(2)}<br>
-                Resources: ${resources}
-            `);
+        L.marker([lat,lon]).addTo(map)
+        .bindPopup(`<b>${title}</b><br>${resources}`);
 
-        // Allocation UI
-        allocationBox.innerHTML += `
-            <p><strong>${title}</strong><br>${resources}</p>
-        `;
+        abox.innerHTML+=`<p>${title}<br>${resources}</p>`;
     }
 
-    updateChart(stats);
+    chartUpdate(stats);
 }
 
-// ---------------- CHART ----------------
+// CHART
 let chart;
+function chartUpdate(data){
+    let ctx=document.getElementById("chart");
 
-function updateChart(data) {
-    let ctx = document.getElementById("chart");
+    if(chart) chart.destroy();
 
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-        type: "pie",
-        data: {
-            labels: ["High", "Medium", "Low"],
-            datasets: [{
-                data: [data.High, data.Medium, data.Low]
-            }]
+    chart=new Chart(ctx,{
+        type:"doughnut",
+        data:{
+            labels:["High","Medium","Low"],
+            datasets:[{data:[data.High,data.Medium,data.Low]}]
         }
     });
 }
 
-// ---------------- INIT ----------------
-async function init() {
-    await getWeather();
-    await getDisasters();
+// INIT
+async function init(){
+    await weather();
+    await disasters();
 }
 
 init();
-setInterval(init, 60000);
+setInterval(init,60000);
 
 </script>
 
