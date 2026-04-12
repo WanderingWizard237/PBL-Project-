@@ -1,252 +1,145 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DRROS - Interactive Presentation</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DRROS - Disaster Response Resource Optimization System</title>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f4f6f9;
+            color: #333;
+        }
 
-<style>
-body {
-    margin: 0;
-    font-family: Arial, sans-serif;
-    background: linear-gradient(to right, #0f2027, #203a43, #2c5364);
-    color: white;
-    scroll-behavior: smooth;
-}
+        header {
+            background: #1e3a8a;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
 
-/* Navigation */
-nav {
-    position: fixed;
-    width: 100%;
-    background: #000;
-    padding: 10px;
-    text-align: center;
-    z-index: 1000;
-}
+        nav {
+            background: #111827;
+            padding: 10px;
+            text-align: center;
+        }
 
-nav a {
-    color: #00e5ff;
-    margin: 0 15px;
-    text-decoration: none;
-    font-weight: bold;
-}
+        nav a {
+            color: white;
+            margin: 0 15px;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
-nav a:hover {
-    color: #ffcc00;
-}
+        nav a:hover {
+            color: #60a5fa;
+        }
 
-/* Sections */
-section {
-    padding: 100px 10% 60px 10%;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-    opacity: 0;
-    transform: translateY(30px);
-    transition: 0.8s ease;
-}
+        section {
+            padding: 40px;
+            max-width: 1000px;
+            margin: auto;
+        }
 
-section.visible {
-    opacity: 1;
-    transform: translateY(0);
-}
+        h2 {
+            color: #1e3a8a;
+        }
 
-h1, h2 {
-    text-align: center;
-}
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
 
-h1 {
-    color: #00e5ff;
-}
+        .btn {
+            display: inline-block;
+            padding: 10px 15px;
+            background: #1e3a8a;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
 
-h2 {
-    color: #ffcc00;
-}
+        .btn:hover {
+            background: #2563eb;
+        }
 
-.card {
-    background: rgba(255,255,255,0.08);
-    padding: 20px;
-    border-radius: 10px;
-    margin: 15px 0;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.card:hover {
-    background: rgba(255,255,255,0.2);
-}
-
-.hidden {
-    display: none;
-}
-
-button {
-    padding: 10px 20px;
-    background: #00e5ff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-button:hover {
-    background: #ffcc00;
-}
-
-footer {
-    text-align: center;
-    padding: 20px;
-    background: black;
-}
-</style>
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #111827;
+            color: white;
+        }
+    </style>
 </head>
 
 <body>
 
+<header>
+    <h1>DRROS</h1>
+    <p>Disaster Response Resource Optimization System</p>
+</header>
+
 <nav>
-<a href="#home">Home</a>
-<a href="#intro">Introduction</a>
-<a href="#literature">Literature</a>
-<a href="#problem">Problem</a>
-<a href="#solution">Solution</a>
-<a href="#objectives">Objectives</a>
-<a href="#references">References</a>
+    <a href="#about">About</a>
+    <a href="#features">Features</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="#demo">Demo</a>
 </nav>
 
-<section id="home">
-<h1>Disaster Management and Resource Allocation System</h1>
-<p style="text-align:center;">Aditya Aggarwal | Reg No: 2427030522</p>
-<p style="text-align:center;">Supervised By: Dr. Mayank Namdev</p>
+<section id="about">
+    <h2>About the Project</h2>
+    <div class="card">
+        <p>
+            DRROS is a smart disaster management system designed to optimize resource allocation 
+            using real-time data. The system integrates external APIs like GDACS to fetch live disaster data 
+            and uses intelligent algorithms to allocate resources efficiently.
+        </p>
+    </div>
 </section>
 
-<section id="intro">
-<h2>Introduction</h2>
-<div class="card">
-<p>
-A Disaster Management and Resource Allocation System coordinates
-activities before, during and after disasters using technology,
-communication and intelligent resource management.
-</p>
-<ul>
-<li>Predict disasters</li>
-<li>Coordinate rescue operations</li>
-<li>Optimize resource allocation</li>
-<li>Support rehabilitation</li>
-</ul>
-</div>
+<section id="features">
+    <h2>Key Features</h2>
+    <div class="card">
+        <ul>
+            <li>Real-time disaster data using GDACS API</li>
+            <li>Optimized resource allocation system</li>
+            <li>Weather factor integration for better decisions</li>
+            <li>Interactive dashboard visualization</li>
+            <li>Incident severity-based prioritization</li>
+        </ul>
+    </div>
 </section>
 
-<section id="literature">
-<h2>Literature Review (Click to Expand)</h2>
-
-<div class="card" onclick="toggle('lit1')">
-<strong>Pramod Patil (2012)</strong>
-<div id="lit1" class="hidden">
-Focused on effective warning and communication systems in India.
-</div>
-</div>
-
-<div class="card" onclick="toggle('lit2')">
-<strong>Chen-Huei Chou et al. (2013)</strong>
-<div id="lit2" class="hidden">
-Web-based disaster management systems for victims and aid providers.
-</div>
-</div>
-
-<div class="card" onclick="toggle('lit3')">
-<strong>Dr. Priyanka Banerji (2013)</strong>
-<div id="lit3" class="hidden">
-Comparison of disaster recovery growth between India and Japan.
-</div>
-</div>
-
-<div class="card" onclick="toggle('lit4')">
-<strong>Other Researchers (2014–2018)</strong>
-<div id="lit4" class="hidden">
-Focused on social vulnerability, grassroots participation, 
-case studies, and inefficiencies in frameworks.
-</div>
-</div>
-
+<section id="tech">
+    <h2>Tech Stack</h2>
+    <div class="card">
+        <ul>
+            <li>Python (Core Logic)</li>
+            <li>APIs: GDACS, Weather API</li>
+            <li>Frontend: HTML, CSS</li>
+            <li>Version Control: Git & GitHub</li>
+        </ul>
+    </div>
 </section>
 
-<section id="problem">
-<h2>Problem Statement</h2>
-<div class="card">
-A system is needed to automate and optimize disaster response 
-through real-time management and efficient resource allocation.
-</div>
-</section>
-
-<section id="solution">
-<h2>Proposed Solution – DRROS</h2>
-
-<div class="card">
-<strong>Key Components (Click Me)</strong>
-<div id="components" class="hidden">
-<ul>
-<li>GIS Integration</li>
-<li>IoT & Sensor Networks</li>
-<li>Mobile Reporting App</li>
-<li>Social Media NLP Analytics</li>
-<li>Predictive ML Models</li>
-<li>Optimization Algorithms</li>
-<li>GPS & RFID Tracking</li>
-</ul>
-</div>
-</div>
-
-<button onclick="toggle('components')">Show/Hide Components</button>
-
-</section>
-
-<section id="objectives">
-<h2>Objectives</h2>
-<div class="card">
-<ul>
-<li>Optimize resource allocation</li>
-<li>Enhance situational awareness</li>
-<li>Improve coordination</li>
-<li>Provide predictive response</li>
-</ul>
-</div>
-</section>
-
-<section id="references">
-<h2>References</h2>
-<div class="card">
-Hinoni Goyal & Manik Goyal (2018) – Review on Disaster Management.
-</div>
-</section>
-
-<section>
-<h2>THANK YOU!</h2>
+<section id="demo">
+    <h2>Project Links</h2>
+    <div class="card">
+        <p>View the source code and updates:</p>
+        <a class="btn" href="https://github.com/WanderingWizard237/PBL-Project-" target="_blank">
+            View GitHub Repository
+        </a>
+    </div>
 </section>
 
 <footer>
-© 2026 DRROS Presentation
+    <p>© 2026 DRROS Project | Built by Aditya Aggarwal</p>
 </footer>
-
-<script>
-function toggle(id) {
-    var element = document.getElementById(id);
-    if (element.classList.contains("hidden")) {
-        element.classList.remove("hidden");
-    } else {
-        element.classList.add("hidden");
-    }
-}
-
-/* Fade-in animation on scroll */
-const sections = document.querySelectorAll("section");
-
-window.addEventListener("scroll", () => {
-    sections.forEach(sec => {
-        const position = sec.getBoundingClientRect().top;
-        if(position < window.innerHeight - 100) {
-            sec.classList.add("visible");
-        }
-    });
-});
-</script>
 
 </body>
 </html>
