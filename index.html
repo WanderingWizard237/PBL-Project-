@@ -4,69 +4,66 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DRROS Ultimate Dashboard</title>
+<title>DRROS Advanced Dashboard</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<!-- Leaflet Map -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body { font-family: Arial; margin:0; background:#f4f6f9;}
-header { background:#1e3a8a; color:white; text-align:center; padding:20px;}
+body { font-family: Arial; margin:0; background:#eef2f7;}
+header { background:#0f172a; color:white; text-align:center; padding:20px;}
 section { padding:20px; max-width:1200px; margin:auto;}
 
 .card {
     background:white;
     padding:20px;
     margin:20px 0;
-    border-radius:10px;
-    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+    border-radius:12px;
+    box-shadow:0 6px 12px rgba(0,0,0,0.1);
 }
 
-#map { height:400px; }
+#map { height:450px; }
 
 .incident { padding:10px; border-bottom:1px solid #ddd;}
+.high { color:red; font-weight:bold;}
+.medium { color:orange;}
+.low { color:green;}
 </style>
 </head>
 
 <body>
 
 <header>
-<h1>DRROS Dashboard</h1>
-<p>Real-Time Disaster + Weather + Resource Optimization</p>
+<h1>DRROS Advanced Dashboard</h1>
+<p>AI-Driven Disaster Response System</p>
 </header>
 
 <section>
 
-<!-- Weather -->
 <div class="card">
-<h2>🌦️ Weather Impact</h2>
-<div id="weather">Loading weather...</div>
+<h2>🌦️ Weather Intelligence</h2>
+<div id="weather"></div>
 </div>
 
-<!-- Disaster Feed -->
 <div class="card">
-<h2>🌍 Live Disasters (GDACS)</h2>
-<div id="disaster-list"></div>
+<h2>🌍 Live Disaster Feed</h2>
+<div id="disasters"></div>
 </div>
 
-<!-- Map -->
 <div class="card">
-<h2>🗺️ Disaster Map</h2>
+<h2>🗺️ Global Disaster Map</h2>
 <div id="map"></div>
 </div>
 
-<!-- Chart -->
 <div class="card">
-<h2>📊 Severity Distribution</h2>
+<h2>📊 Severity Analytics</h2>
 <canvas id="chart"></canvas>
 </div>
 
-<!-- Resource Allocation -->
 <div class="card">
-<h2>🚑 Resource Allocation Simulation</h2>
+<h2>🚑 AI Resource Allocation</h2>
 <div id="allocation"></div>
 </div>
 
@@ -75,14 +72,21 @@ section { padding:20px; max-width:1200px; margin:auto;}
 <script>
 
 // ---------------- WEATHER ----------------
-async function fetchWeather() {
+let weatherFactor = 1;
+
+async function getWeather() {
     try {
         let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
         let data = await res.json();
 
+        let wind = data.current_weather.windspeed;
+
+        weatherFactor = wind > 20 ? 1.5 : 1;
+
         document.getElementById("weather").innerHTML =
-            `Temperature: ${data.current_weather.temperature}°C <br>
-             Wind Speed: ${data.current_weather.windspeed} km/h`;
+            `Temperature: ${data.current_weather.temperature}°C<br>
+             Wind Speed: ${wind} km/h<br>
+             Risk Multiplier: x${weatherFactor}`;
     } catch {
         document.getElementById("weather").innerHTML = "Weather unavailable";
     }
@@ -92,78 +96,103 @@ async function fetchWeather() {
 let map = L.map('map').setView([20, 0], 2);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap'
 }).addTo(map);
 
 // ---------------- GDACS ----------------
-async function fetchDisasters() {
-    let response = await fetch("https://www.gdacs.org/xml/rss.xml");
-    let text = await response.text();
+async function getDisasters() {
+    let res = await fetch("https://www.gdacs.org/xml/rss.xml");
+    let text = await res.text();
 
-    let parser = new DOMParser();
-    let xml = parser.parseFromString(text, "text/xml");
+    let xml = new DOMParser().parseFromString(text, "text/xml");
     let items = xml.getElementsByTagName("item");
 
-    let list = document.getElementById("disaster-list");
-    list.innerHTML = "";
+    let container = document.getElementById("disasters");
+    let allocationBox = document.getElementById("allocation");
 
-    let counts = {High:0, Medium:0, Low:0};
-    let allocationHTML = "";
+    container.innerHTML = "";
+    allocationBox.innerHTML = "";
+
+    let stats = {High:0, Medium:0, Low:0};
 
     for (let i = 0; i < Math.min(items.length, 6); i++) {
+
         let title = items[i].getElementsByTagName("title")[0].textContent;
 
+        // Extract coordinates if available
+        let lat = items[i].getElementsByTagName("geo:lat")[0];
+        let lon = items[i].getElementsByTagName("geo:long")[0];
+
+        lat = lat ? parseFloat(lat.textContent) : (Math.random()*140 - 70);
+        lon = lon ? parseFloat(lon.textContent) : (Math.random()*360 - 180);
+
+        // Severity logic
         let severity = "Low";
-        let resources = "Low Support";
+        let baseScore = 1;
 
         if (title.includes("Red")) {
             severity = "High";
-            resources = "🚁 Helicopters + Medical Teams";
+            baseScore = 3;
         } else if (title.includes("Orange")) {
             severity = "Medium";
-            resources = "🚑 Ambulances + Rescue Teams";
-        } else {
-            resources = "🧑‍🚒 Local Support";
+            baseScore = 2;
         }
 
-        counts[severity]++;
+        stats[severity]++;
 
-        // List
+        // AI Priority Score
+        let priorityScore = baseScore * weatherFactor;
+
+        // Resource logic
+        let resources;
+        if (priorityScore > 3) {
+            resources = "🚁 Air Support + Advanced Medical Units";
+        } else if (priorityScore > 2) {
+            resources = "🚑 Ambulances + Rescue Teams";
+        } else {
+            resources = "🧑‍🚒 Local Emergency Units";
+        }
+
+        // UI
         let div = document.createElement("div");
-        div.className = "incident";
-        div.innerHTML = `<strong>${title}</strong><br>Severity: ${severity}`;
-        list.appendChild(div);
+        div.className = `incident ${severity.toLowerCase()}`;
+        div.innerHTML = `
+            <strong>${title}</strong><br>
+            Severity: ${severity}<br>
+            Priority Score: ${priorityScore.toFixed(2)}
+        `;
+        container.appendChild(div);
 
-        // Map markers (randomized for demo)
-        let lat = (Math.random() * 140) - 70;
-        let lon = (Math.random() * 360) - 180;
-
+        // Map marker
         L.marker([lat, lon]).addTo(map)
-            .bindPopup(title);
+            .bindPopup(`
+                <b>${title}</b><br>
+                Severity: ${severity}<br>
+                Priority: ${priorityScore.toFixed(2)}<br>
+                Resources: ${resources}
+            `);
 
-        // Allocation
-        allocationHTML += `<p><strong>${title}</strong><br>${resources}</p>`;
+        // Allocation UI
+        allocationBox.innerHTML += `
+            <p><strong>${title}</strong><br>${resources}</p>
+        `;
     }
 
-    document.getElementById("allocation").innerHTML = allocationHTML;
-
-    updateChart(counts);
+    updateChart(stats);
 }
 
 // ---------------- CHART ----------------
 let chart;
 
 function updateChart(data) {
-    let ctx = document.getElementById("chart").getContext("2d");
+    let ctx = document.getElementById("chart");
 
     if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
-        type: "bar",
+        type: "pie",
         data: {
             labels: ["High", "Medium", "Low"],
             datasets: [{
-                label: "Disasters",
                 data: [data.High, data.Medium, data.Low]
             }]
         }
@@ -171,10 +200,13 @@ function updateChart(data) {
 }
 
 // ---------------- INIT ----------------
-fetchWeather();
-fetchDisasters();
+async function init() {
+    await getWeather();
+    await getDisasters();
+}
 
-setInterval(fetchDisasters, 60000);
+init();
+setInterval(init, 60000);
 
 </script>
 
