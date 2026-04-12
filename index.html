@@ -4,127 +4,224 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DRROS Topper Version</title>
+<title>DRROS - Disaster Response Resource Optimization System</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-body { margin:0; font-family:Segoe UI; background:#0f172a; color:white;}
-.container { padding:20px; max-width:1200px; margin:auto;}
-.card { background:#1e293b; padding:20px; margin:15px 0; border-radius:12px;}
-input { padding:10px; margin:5px; }
-button { padding:10px; background:#38bdf8; border:none; cursor:pointer;}
-#map { height:400px; }
+
+/* GLOBAL */
+body {
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background:#0f172a;
+    color:#e2e8f0;
+}
+
+h1,h2,h3 { color:#38bdf8; }
+
+.container {
+    max-width:1300px;
+    margin:auto;
+    padding:20px;
+}
+
+/* NAV */
+nav {
+    position:sticky;
+    top:0;
+    background:#020617;
+    padding:15px;
+    display:flex;
+    justify-content:center;
+    gap:40px;
+}
+
+nav a {
+    color:white;
+    text-decoration:none;
+}
+
+/* CARD */
+.card {
+    background:#1e293b;
+    padding:25px;
+    margin:25px 0;
+    border-radius:12px;
+}
+
+/* GRID */
+.grid {
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px,1fr));
+    gap:20px;
+}
+
+/* MAP FIX */
+#map {
+    width:100%;
+    height:500px;
+    border-radius:12px;
+}
+
+/* INCIDENT */
+.incident {
+    padding:10px;
+    border-bottom:1px solid #334155;
+}
+
+.high { color:#f87171; }
+.medium { color:#fbbf24; }
+.low { color:#34d399; }
+
+footer {
+    text-align:center;
+    padding:20px;
+    background:#020617;
+}
+
 </style>
 </head>
 
 <body>
 
+<nav>
+<a href="#about">About</a>
+<a href="#working">Working</a>
+<a href="#dashboard">Dashboard</a>
+<a href="#algorithm">Algorithm</a>
+</nav>
+
 <div class="container">
 
-<h1>🚀 DRROS Topper Dashboard</h1>
+<!-- ABOUT -->
+<div class="card" id="about">
+<h1>🚀 DRROS</h1>
+<p><b>Disaster Response Resource Optimization System</b></p>
 
-<!-- LOGIN -->
-<div class="card" id="loginBox">
-<h3>🔐 Login</h3>
-<input id="user" placeholder="Username">
-<input id="pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
-<p id="loginStatus"></p>
+<p>
+DRROS is a real-time intelligent disaster management system designed to optimize emergency response
+using live data. It integrates global disaster feeds and environmental conditions to make smart decisions.
+</p>
+
+<p>
+Unlike traditional systems, DRROS dynamically evaluates disaster severity and external conditions to
+prioritize incidents and allocate resources efficiently.
+</p>
 </div>
 
-<div id="dashboard" style="display:none;">
+<!-- WORKING -->
+<div class="card" id="working">
+<h2>⚙️ How It Works</h2>
 
-<!-- WEATHER -->
-<div class="card">
-<h3>🌦 Weather Intelligence</h3>
-<div id="weather"></div>
+<ol>
+<li>Fetch live disaster data from GDACS</li>
+<li>Fetch real-time weather conditions</li>
+<li>Compute priority score</li>
+<li>Visualize data on dashboard and map</li>
+<li>Allocate resources dynamically</li>
+</ol>
 </div>
 
-<!-- DISASTERS -->
-<div class="card">
-<h3>🌍 Live Disasters</h3>
-<div id="disasters"></div>
+<!-- DASHBOARD -->
+<div class="card" id="dashboard">
+<h2>📊 Live Dashboard</h2>
+
+<div class="grid">
+<div>
+<h3>🌦 Weather</h3>
+<div id="weather">Loading...</div>
+</div>
+
+<div>
+<h3>🌍 Disasters</h3>
+<div id="disasters">Loading...</div>
+</div>
+</div>
 </div>
 
 <!-- MAP -->
 <div class="card">
-<h3>🗺 Map</h3>
+<h2>🗺 Global Disaster Map</h2>
 <div id="map"></div>
 </div>
 
-<!-- ANALYTICS -->
+<!-- CHART -->
 <div class="card">
-<h3>📊 Trends</h3>
-<canvas id="trendChart"></canvas>
+<h2>📊 Severity Distribution</h2>
+<canvas id="chart"></canvas>
 </div>
 
 <!-- RESOURCE -->
 <div class="card">
-<h3>🚑 Smart Allocation</h3>
+<h2>🚑 Resource Allocation</h2>
 <div id="allocation"></div>
 </div>
 
+<!-- ALGORITHM -->
+<div class="card" id="algorithm">
+<h2>🧠 Decision Algorithm</h2>
+
+<pre>
+Priority Score = Severity × Weather Factor + Random Factor
+</pre>
+
+<ul>
+<li>Severity → Based on GDACS alert</li>
+<li>Weather → Wind & temperature impact</li>
+<li>Random → Real-world uncertainty</li>
+</ul>
+
 </div>
 
 </div>
+
+<footer>
+<p>DRROS Project 2026</p>
+</footer>
 
 <script>
 
-// LOGIN SYSTEM (demo)
-function login(){
-    let u=document.getElementById("user").value;
-    let p=document.getElementById("pass").value;
-
-    if(u==="admin" && p==="1234"){
-        document.getElementById("loginBox").style.display="none";
-        document.getElementById("dashboard").style.display="block";
-    } else {
-        document.getElementById("loginStatus").innerText="Invalid credentials";
-    }
-}
-
 // WEATHER
-let weatherFactor=1;
+let weatherFactor = 1;
 
 async function getWeather(){
-    let res=await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
-    let data=await res.json();
+    let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
+    let data = await res.json();
 
-    let wind=data.current_weather.windspeed;
-    let temp=data.current_weather.temperature;
+    let temp = data.current_weather.temperature;
+    let wind = data.current_weather.windspeed;
 
-    weatherFactor = (wind>20?1.5:1) + (temp>35?0.5:0);
+    weatherFactor = (wind>20?1.5:1);
 
-    document.getElementById("weather").innerHTML=
-        `Temp: ${temp}°C | Wind: ${wind} km/h | Factor: ${weatherFactor}`;
+    document.getElementById("weather").innerHTML =
+        `Temperature: ${temp}°C<br>Wind: ${wind} km/h<br>Factor: ${weatherFactor}`;
 }
 
-// MAP
-let map=L.map('map').setView([20,0],2);
+// MAP INIT (FIXED)
+let map = L.map('map');
+
+setTimeout(() => {
+    map.setView([20,0],2);
+    map.invalidateSize();   // 🔥 FIX
+}, 500);
+
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// STORAGE (history)
-function saveHistory(data){
-    let history=JSON.parse(localStorage.getItem("history")||"[]");
-    history.push(data);
-    if(history.length>10) history.shift();
-    localStorage.setItem("history",JSON.stringify(history));
-}
-
-// DISASTERS + AI
+// DISASTERS
 async function getDisasters(){
 
-    let res=await fetch("https://www.gdacs.org/xml/rss.xml");
-    let text=await res.text();
+    let res = await fetch("https://www.gdacs.org/xml/rss.xml");
+    let text = await res.text();
 
-    let xml=new DOMParser().parseFromString(text,"text/xml");
-    let items=xml.getElementsByTagName("item");
+    let xml = new DOMParser().parseFromString(text,"text/xml");
+    let items = xml.getElementsByTagName("item");
 
-    let box=document.getElementById("disasters");
-    let alloc=document.getElementById("allocation");
+    let box = document.getElementById("disasters");
+    let alloc = document.getElementById("allocation");
 
     box.innerHTML="";
     alloc.innerHTML="";
@@ -133,7 +230,7 @@ async function getDisasters(){
 
     for(let i=0;i<6;i++){
 
-        let title=items[i].getElementsByTagName("title")[0].textContent;
+        let title = items[i].getElementsByTagName("title")[0].textContent;
 
         let severity="Low",score=1;
 
@@ -142,16 +239,16 @@ async function getDisasters(){
 
         stats[severity]++;
 
-        // ADVANCED AI LOGIC
         let priority = score * weatherFactor + Math.random();
 
-        let resources=
-            priority>4?"🚁 Air + ICU Units":
+        let resources =
+            priority>4?"🚁 Air Support":
             priority>2.5?"🚑 Ambulances":
             "🧑‍🚒 Local Teams";
 
         let div=document.createElement("div");
-        div.innerHTML=`${title} | Score: ${priority.toFixed(2)}`;
+        div.className=`incident ${severity.toLowerCase()}`;
+        div.innerHTML=`${title}<br>Score: ${priority.toFixed(2)}`;
         box.appendChild(div);
 
         let lat=Math.random()*140-70;
@@ -163,28 +260,21 @@ async function getDisasters(){
         alloc.innerHTML+=`<p>${title}<br>${resources}</p>`;
     }
 
-    saveHistory(stats);
-    updateTrend();
+    updateChart(stats);
 }
 
-// TREND GRAPH
-let trendChart;
+// CHART
+let chart;
+function updateChart(data){
+    let ctx=document.getElementById("chart");
 
-function updateTrend(){
-    let history=JSON.parse(localStorage.getItem("history")||"[]");
+    if(chart) chart.destroy();
 
-    let labels=history.map((_,i)=>"T"+i);
-    let high=history.map(h=>h.High);
-
-    let ctx=document.getElementById("trendChart");
-
-    if(trendChart) trendChart.destroy();
-
-    trendChart=new Chart(ctx,{
-        type:"line",
+    chart=new Chart(ctx,{
+        type:"bar",
         data:{
-            labels:labels,
-            datasets:[{label:"High Severity",data:high}]
+            labels:["High","Medium","Low"],
+            datasets:[{data:[data.High,data.Medium,data.Low]}]
         }
     });
 }
@@ -195,6 +285,7 @@ async function init(){
     await getDisasters();
 }
 
+init();
 setInterval(init,60000);
 
 </script>
