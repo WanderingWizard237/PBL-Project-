@@ -4,216 +4,197 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>DRROS Pro Dashboard</title>
+<title>DRROS Topper Version</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
 <style>
-:root {
-    --bg:#0f172a;
-    --card:#1e293b;
-    --text:#e2e8f0;
-    --accent:#38bdf8;
-}
-
-body {
-    margin:0;
-    font-family: 'Segoe UI', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-}
-
-/* Sidebar */
-.sidebar {
-    position: fixed;
-    width: 220px;
-    height: 100%;
-    background: #020617;
-    padding: 20px;
-}
-
-.sidebar h2 { color: var(--accent); }
-
-.sidebar a {
-    display:block;
-    color: var(--text);
-    margin:15px 0;
-    text-decoration:none;
-}
-
-.main {
-    margin-left:240px;
-    padding:20px;
-}
-
-.card {
-    background: var(--card);
-    padding:20px;
-    margin:20px 0;
-    border-radius:12px;
-    box-shadow:0 0 20px rgba(0,0,0,0.3);
-}
-
-#map { height:400px; border-radius:10px;}
-
-.incident { padding:10px; border-bottom:1px solid #334155;}
-
-.high { color:#f87171;}
-.medium { color:#fbbf24;}
-.low { color:#34d399;}
-
-.loader {
-    text-align:center;
-    padding:20px;
-}
+body { margin:0; font-family:Segoe UI; background:#0f172a; color:white;}
+.container { padding:20px; max-width:1200px; margin:auto;}
+.card { background:#1e293b; padding:20px; margin:15px 0; border-radius:12px;}
+input { padding:10px; margin:5px; }
+button { padding:10px; background:#38bdf8; border:none; cursor:pointer;}
+#map { height:400px; }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar">
-    <h2>DRROS</h2>
-    <a href="#">Dashboard</a>
-    <a href="#">Disasters</a>
-    <a href="#">Map</a>
-    <a href="#">Analytics</a>
+<div class="container">
+
+<h1>🚀 DRROS Topper Dashboard</h1>
+
+<!-- LOGIN -->
+<div class="card" id="loginBox">
+<h3>🔐 Login</h3>
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+<p id="loginStatus"></p>
 </div>
 
-<div class="main">
+<div id="dashboard" style="display:none;">
 
-<h1>🚀 DRROS Pro Dashboard</h1>
-
+<!-- WEATHER -->
 <div class="card">
 <h3>🌦 Weather Intelligence</h3>
-<div id="weather" class="loader">Loading...</div>
+<div id="weather"></div>
 </div>
 
+<!-- DISASTERS -->
 <div class="card">
 <h3>🌍 Live Disasters</h3>
-<div id="disasters" class="loader">Loading...</div>
+<div id="disasters"></div>
 </div>
 
+<!-- MAP -->
 <div class="card">
-<h3>🗺 Disaster Map</h3>
+<h3>🗺 Map</h3>
 <div id="map"></div>
 </div>
 
+<!-- ANALYTICS -->
 <div class="card">
-<h3>📊 Analytics</h3>
-<canvas id="chart"></canvas>
+<h3>📊 Trends</h3>
+<canvas id="trendChart"></canvas>
 </div>
 
+<!-- RESOURCE -->
 <div class="card">
-<h3>🚑 AI Resource Allocation</h3>
+<h3>🚑 Smart Allocation</h3>
 <div id="allocation"></div>
+</div>
+
 </div>
 
 </div>
 
 <script>
 
+// LOGIN SYSTEM (demo)
+function login(){
+    let u=document.getElementById("user").value;
+    let p=document.getElementById("pass").value;
+
+    if(u==="admin" && p==="1234"){
+        document.getElementById("loginBox").style.display="none";
+        document.getElementById("dashboard").style.display="block";
+    } else {
+        document.getElementById("loginStatus").innerText="Invalid credentials";
+    }
+}
+
 // WEATHER
-let weatherFactor = 1;
+let weatherFactor=1;
 
-async function weather() {
-    let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
-    let data = await res.json();
+async function getWeather(){
+    let res=await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
+    let data=await res.json();
 
-    let wind = data.current_weather.windspeed;
-    weatherFactor = wind > 25 ? 1.6 : wind > 15 ? 1.3 : 1;
+    let wind=data.current_weather.windspeed;
+    let temp=data.current_weather.temperature;
 
-    document.getElementById("weather").innerHTML =
-        `Temp: ${data.current_weather.temperature}°C |
-         Wind: ${wind} km/h |
-         Risk x${weatherFactor}`;
+    weatherFactor = (wind>20?1.5:1) + (temp>35?0.5:0);
+
+    document.getElementById("weather").innerHTML=
+        `Temp: ${temp}°C | Wind: ${wind} km/h | Factor: ${weatherFactor}`;
 }
 
 // MAP
-let map = L.map('map').setView([20,0],2);
-
+let map=L.map('map').setView([20,0],2);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-// DISASTERS
-async function disasters() {
+// STORAGE (history)
+function saveHistory(data){
+    let history=JSON.parse(localStorage.getItem("history")||"[]");
+    history.push(data);
+    if(history.length>10) history.shift();
+    localStorage.setItem("history",JSON.stringify(history));
+}
 
-    let res = await fetch("https://www.gdacs.org/xml/rss.xml");
-    let text = await res.text();
+// DISASTERS + AI
+async function getDisasters(){
 
-    let xml = new DOMParser().parseFromString(text,"text/xml");
-    let items = xml.getElementsByTagName("item");
+    let res=await fetch("https://www.gdacs.org/xml/rss.xml");
+    let text=await res.text();
 
-    let dbox = document.getElementById("disasters");
-    let abox = document.getElementById("allocation");
+    let xml=new DOMParser().parseFromString(text,"text/xml");
+    let items=xml.getElementsByTagName("item");
 
-    dbox.innerHTML = "";
-    abox.innerHTML = "";
+    let box=document.getElementById("disasters");
+    let alloc=document.getElementById("allocation");
 
-    let stats = {High:0,Medium:0,Low:0};
+    box.innerHTML="";
+    alloc.innerHTML="";
 
-    for(let i=0;i<6;i++) {
+    let stats={High:0,Medium:0,Low:0};
 
-        let title = items[i].getElementsByTagName("title")[0].textContent;
+    for(let i=0;i<6;i++){
 
-        let lat = items[i].getElementsByTagName("geo:lat")[0];
-        let lon = items[i].getElementsByTagName("geo:long")[0];
+        let title=items[i].getElementsByTagName("title")[0].textContent;
 
-        lat = lat ? parseFloat(lat.textContent) : (Math.random()*140-70);
-        lon = lon ? parseFloat(lon.textContent) : (Math.random()*360-180);
+        let severity="Low",score=1;
 
-        let severity="Low", score=1;
-
-        if(title.includes("Red")) { severity="High"; score=3; }
-        else if(title.includes("Orange")) { severity="Medium"; score=2; }
+        if(title.includes("Red")){severity="High";score=3;}
+        else if(title.includes("Orange")){severity="Medium";score=2;}
 
         stats[severity]++;
 
-        let priority = score * weatherFactor;
+        // ADVANCED AI LOGIC
+        let priority = score * weatherFactor + Math.random();
 
-        let resources =
-            priority>4 ? "🚁 Advanced Air Support" :
-            priority>2.5 ? "🚑 Medical Teams" :
-            "🧑‍🚒 Local Units";
+        let resources=
+            priority>4?"🚁 Air + ICU Units":
+            priority>2.5?"🚑 Ambulances":
+            "🧑‍🚒 Local Teams";
 
         let div=document.createElement("div");
-        div.className=`incident ${severity.toLowerCase()}`;
-        div.innerHTML=`${title}<br>Score: ${priority.toFixed(2)}`;
-        dbox.appendChild(div);
+        div.innerHTML=`${title} | Score: ${priority.toFixed(2)}`;
+        box.appendChild(div);
+
+        let lat=Math.random()*140-70;
+        let lon=Math.random()*360-180;
 
         L.marker([lat,lon]).addTo(map)
-        .bindPopup(`<b>${title}</b><br>${resources}`);
+        .bindPopup(`${title}<br>${resources}`);
 
-        abox.innerHTML+=`<p>${title}<br>${resources}</p>`;
+        alloc.innerHTML+=`<p>${title}<br>${resources}</p>`;
     }
 
-    chartUpdate(stats);
+    saveHistory(stats);
+    updateTrend();
 }
 
-// CHART
-let chart;
-function chartUpdate(data){
-    let ctx=document.getElementById("chart");
+// TREND GRAPH
+let trendChart;
 
-    if(chart) chart.destroy();
+function updateTrend(){
+    let history=JSON.parse(localStorage.getItem("history")||"[]");
 
-    chart=new Chart(ctx,{
-        type:"doughnut",
+    let labels=history.map((_,i)=>"T"+i);
+    let high=history.map(h=>h.High);
+
+    let ctx=document.getElementById("trendChart");
+
+    if(trendChart) trendChart.destroy();
+
+    trendChart=new Chart(ctx,{
+        type:"line",
         data:{
-            labels:["High","Medium","Low"],
-            datasets:[{data:[data.High,data.Medium,data.Low]}]
+            labels:labels,
+            datasets:[{label:"High Severity",data:high}]
         }
     });
 }
 
 // INIT
 async function init(){
-    await weather();
-    await disasters();
+    await getWeather();
+    await getDisasters();
 }
 
-init();
 setInterval(init,60000);
 
 </script>
