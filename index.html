@@ -1,145 +1,182 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DRROS - Disaster Response Resource Optimization System</title>
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            background-color: #f4f6f9;
-            color: #333;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        header {
-            background: #1e3a8a;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
+<title>DRROS Ultimate Dashboard</title>
 
-        nav {
-            background: #111827;
-            padding: 10px;
-            text-align: center;
-        }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-        nav a {
-            color: white;
-            margin: 0 15px;
-            text-decoration: none;
-            font-weight: bold;
-        }
+<!-- Leaflet Map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-        nav a:hover {
-            color: #60a5fa;
-        }
+<style>
+body { font-family: Arial; margin:0; background:#f4f6f9;}
+header { background:#1e3a8a; color:white; text-align:center; padding:20px;}
+section { padding:20px; max-width:1200px; margin:auto;}
 
-        section {
-            padding: 40px;
-            max-width: 1000px;
-            margin: auto;
-        }
+.card {
+    background:white;
+    padding:20px;
+    margin:20px 0;
+    border-radius:10px;
+    box-shadow:0 4px 8px rgba(0,0,0,0.1);
+}
 
-        h2 {
-            color: #1e3a8a;
-        }
+#map { height:400px; }
 
-        .card {
-            background: white;
-            padding: 20px;
-            margin: 20px 0;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .btn {
-            display: inline-block;
-            padding: 10px 15px;
-            background: #1e3a8a;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        .btn:hover {
-            background: #2563eb;
-        }
-
-        footer {
-            text-align: center;
-            padding: 15px;
-            background: #111827;
-            color: white;
-        }
-    </style>
+.incident { padding:10px; border-bottom:1px solid #ddd;}
+</style>
 </head>
 
 <body>
 
 <header>
-    <h1>DRROS</h1>
-    <p>Disaster Response Resource Optimization System</p>
+<h1>DRROS Dashboard</h1>
+<p>Real-Time Disaster + Weather + Resource Optimization</p>
 </header>
 
-<nav>
-    <a href="#about">About</a>
-    <a href="#features">Features</a>
-    <a href="#tech">Tech Stack</a>
-    <a href="#demo">Demo</a>
-</nav>
+<section>
 
-<section id="about">
-    <h2>About the Project</h2>
-    <div class="card">
-        <p>
-            DRROS is a smart disaster management system designed to optimize resource allocation 
-            using real-time data. The system integrates external APIs like GDACS to fetch live disaster data 
-            and uses intelligent algorithms to allocate resources efficiently.
-        </p>
-    </div>
+<!-- Weather -->
+<div class="card">
+<h2>🌦️ Weather Impact</h2>
+<div id="weather">Loading weather...</div>
+</div>
+
+<!-- Disaster Feed -->
+<div class="card">
+<h2>🌍 Live Disasters (GDACS)</h2>
+<div id="disaster-list"></div>
+</div>
+
+<!-- Map -->
+<div class="card">
+<h2>🗺️ Disaster Map</h2>
+<div id="map"></div>
+</div>
+
+<!-- Chart -->
+<div class="card">
+<h2>📊 Severity Distribution</h2>
+<canvas id="chart"></canvas>
+</div>
+
+<!-- Resource Allocation -->
+<div class="card">
+<h2>🚑 Resource Allocation Simulation</h2>
+<div id="allocation"></div>
+</div>
+
 </section>
 
-<section id="features">
-    <h2>Key Features</h2>
-    <div class="card">
-        <ul>
-            <li>Real-time disaster data using GDACS API</li>
-            <li>Optimized resource allocation system</li>
-            <li>Weather factor integration for better decisions</li>
-            <li>Interactive dashboard visualization</li>
-            <li>Incident severity-based prioritization</li>
-        </ul>
-    </div>
-</section>
+<script>
 
-<section id="tech">
-    <h2>Tech Stack</h2>
-    <div class="card">
-        <ul>
-            <li>Python (Core Logic)</li>
-            <li>APIs: GDACS, Weather API</li>
-            <li>Frontend: HTML, CSS</li>
-            <li>Version Control: Git & GitHub</li>
-        </ul>
-    </div>
-</section>
+// ---------------- WEATHER ----------------
+async function fetchWeather() {
+    try {
+        let res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=28.6&longitude=77.2&current_weather=true");
+        let data = await res.json();
 
-<section id="demo">
-    <h2>Project Links</h2>
-    <div class="card">
-        <p>View the source code and updates:</p>
-        <a class="btn" href="https://github.com/WanderingWizard237/PBL-Project-" target="_blank">
-            View GitHub Repository
-        </a>
-    </div>
-</section>
+        document.getElementById("weather").innerHTML =
+            `Temperature: ${data.current_weather.temperature}°C <br>
+             Wind Speed: ${data.current_weather.windspeed} km/h`;
+    } catch {
+        document.getElementById("weather").innerHTML = "Weather unavailable";
+    }
+}
 
-<footer>
-    <p>© 2026 DRROS Project | Built by Aditya Aggarwal</p>
-</footer>
+// ---------------- MAP ----------------
+let map = L.map('map').setView([20, 0], 2);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap'
+}).addTo(map);
+
+// ---------------- GDACS ----------------
+async function fetchDisasters() {
+    let response = await fetch("https://www.gdacs.org/xml/rss.xml");
+    let text = await response.text();
+
+    let parser = new DOMParser();
+    let xml = parser.parseFromString(text, "text/xml");
+    let items = xml.getElementsByTagName("item");
+
+    let list = document.getElementById("disaster-list");
+    list.innerHTML = "";
+
+    let counts = {High:0, Medium:0, Low:0};
+    let allocationHTML = "";
+
+    for (let i = 0; i < Math.min(items.length, 6); i++) {
+        let title = items[i].getElementsByTagName("title")[0].textContent;
+
+        let severity = "Low";
+        let resources = "Low Support";
+
+        if (title.includes("Red")) {
+            severity = "High";
+            resources = "🚁 Helicopters + Medical Teams";
+        } else if (title.includes("Orange")) {
+            severity = "Medium";
+            resources = "🚑 Ambulances + Rescue Teams";
+        } else {
+            resources = "🧑‍🚒 Local Support";
+        }
+
+        counts[severity]++;
+
+        // List
+        let div = document.createElement("div");
+        div.className = "incident";
+        div.innerHTML = `<strong>${title}</strong><br>Severity: ${severity}`;
+        list.appendChild(div);
+
+        // Map markers (randomized for demo)
+        let lat = (Math.random() * 140) - 70;
+        let lon = (Math.random() * 360) - 180;
+
+        L.marker([lat, lon]).addTo(map)
+            .bindPopup(title);
+
+        // Allocation
+        allocationHTML += `<p><strong>${title}</strong><br>${resources}</p>`;
+    }
+
+    document.getElementById("allocation").innerHTML = allocationHTML;
+
+    updateChart(counts);
+}
+
+// ---------------- CHART ----------------
+let chart;
+
+function updateChart(data) {
+    let ctx = document.getElementById("chart").getContext("2d");
+
+    if (chart) chart.destroy();
+
+    chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+            labels: ["High", "Medium", "Low"],
+            datasets: [{
+                label: "Disasters",
+                data: [data.High, data.Medium, data.Low]
+            }]
+        }
+    });
+}
+
+// ---------------- INIT ----------------
+fetchWeather();
+fetchDisasters();
+
+setInterval(fetchDisasters, 60000);
+
+</script>
 
 </body>
 </html>
